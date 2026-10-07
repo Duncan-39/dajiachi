@@ -1,5 +1,6 @@
 import ui from "./ui.html";
 import { runLoop } from "./loop.js";
+import { DEFAULT_TONE, TONES, isTone } from "./prompt.js";
 import { validateMember } from "./validate.js";
 import {
   CODE_PATTERN,
@@ -81,8 +82,9 @@ async function handleDecide(request, env, code) {
     return json({ error: "The referee is not set up yet (missing API keys)." }, 503);
   }
 
-  // The body is optional. An empty body means "just decide".
+  // The body is optional. An empty body means "just decide" in the default tone.
   let objection = "";
+  let tone = DEFAULT_TONE;
   const text = await request.text();
   if (text.trim() !== "") {
     let body;
@@ -97,6 +99,12 @@ async function handleDecide(request, env, code) {
     objection = (body?.objection ?? "").trim();
     if (objection.length > MAX_OBJECTION) {
       return json({ error: `objection must be at most ${MAX_OBJECTION} characters` }, 400);
+    }
+    if (body?.tone !== undefined) {
+      if (!isTone(body.tone)) {
+        return json({ error: `tone must be one of: ${Object.keys(TONES).join(", ")}` }, 400);
+      }
+      tone = body.tone;
     }
   }
 
@@ -115,7 +123,7 @@ async function handleDecide(request, env, code) {
     : "Make a shortlist for where the group eats.";
 
   try {
-    const { reply, shortlist } = await runLoop(message, env, code);
+    const { reply, shortlist } = await runLoop(message, env, code, tone);
     // One row per run. With no shortlist, record the explanation instead so
     // everyone in the room sees why.
     await addShortlist(

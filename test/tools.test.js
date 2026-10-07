@@ -393,9 +393,9 @@ test("buildShortlist needs a reason for every place and a summary", () => {
 });
 
 test("buildShortlist caps long text", () => {
-  const out = buildShortlist([{ id: "p1", reason: "r".repeat(500) }], "s".repeat(900), candidates());
+  const out = buildShortlist([{ id: "p1", reason: "r".repeat(500) }], "s".repeat(1200), candidates());
   assert.equal(out.picks[0].reason.length, 300);
-  assert.equal(out.summary.length, 700);
+  assert.equal(out.summary.length, 900);
 });
 
 test("buildShortlist rejects null entries without throwing", () => {
@@ -416,6 +416,15 @@ test("the five tools have a name, a description and an object schema", () => {
     assert.ok(t.function.description.length > 0);
     assert.equal(t.function.parameters.type, "object");
   }
+});
+
+test("write_shortlist asks for a spoken verdict in full sentences, not a list", () => {
+  const tool = toolDefinitions.find((t) => t.function.name === "write_shortlist");
+  const { picks, summary } = tool.function.parameters.properties;
+  assert.match(summary.description, /say it aloud/);
+  assert.match(summary.description, /full sentences/);
+  assert.match(summary.description, /No bullet points, lists or sentence fragments/);
+  assert.match(picks.items.properties.reason.description, /full sentences/);
 });
 
 test("no tool lets the model pass coordinates or travel times", () => {

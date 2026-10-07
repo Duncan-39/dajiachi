@@ -1,4 +1,4 @@
-import { buildSystemPrompt } from "./prompt.js";
+import { buildSystemPrompt, DEFAULT_TONE } from "./prompt.js";
 import { toolDefinitions, executeTool, createToolState } from "./tools.js";
 
 // TODO: set the base URL and model for your OpenAI-compatible provider.
@@ -21,9 +21,9 @@ const GAVE_UP_REPLY = "Referee tried too many times already. Try again in a bit.
  * which case the caller records the reply as a "could not decide" row. The
  * loop does not write to D1 itself.
  */
-export async function runLoop(message, env, room) {
+export async function runLoop(message, env, room, tone = DEFAULT_TONE) {
   const messages = [
-    { role: "system", content: buildSystemPrompt() },
+    { role: "system", content: buildSystemPrompt(tone) },
     { role: "user", content: message },
   ];
 

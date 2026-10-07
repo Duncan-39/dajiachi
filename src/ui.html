@@ -175,10 +175,14 @@
   .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; align-items: center; }
   .referee-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
   .referee-row .field { flex: 1; min-width: 200px; }
+  .tone-row { margin-top: 12px; }
+  .tone-row label { font-weight: 700; }
+  .tone-row select.field { flex: 0 1 220px; min-width: 160px; }
 
   /* Shortlist */
   .verdict { border-color: var(--jade); box-shadow: 0 0 0 1px var(--jade); }
   .verdict p { white-space: pre-wrap; margin-top: 8px; }
+  .verdict-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .list { display: grid; gap: 14px; margin-bottom: 20px; }
   .pick {
     display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr); gap: 16px 32px; align-items: start;
@@ -399,6 +403,14 @@
       <p class="hint">Not happy with the last shortlist? Say why and ask again.</p>
       <div class="referee-row">
         <input class="field" id="objection" type="text" maxlength="300" placeholder="e.g. Ah Beng objects, nothing Western please" aria-label="Objection (optional)" autocomplete="off">
+      </div>
+      <div class="referee-row tone-row">
+        <label for="tone">Referee's voice</label>
+        <select class="field" id="tone">
+          <option value="singlish">Singlish referee</option>
+          <option value="professional">Professional</option>
+          <option value="uncle">Grumpy uncle</option>
+        </select>
         <button class="btn" id="decide" type="button">Make the shortlist</button>
       </div>
       <p class="error" id="decide-error" role="alert"></p>
@@ -406,7 +418,10 @@
 
     <div id="results" hidden>
       <section class="panel verdict" id="verdict">
-        <span class="eyebrow">The referee says</span>
+        <div class="verdict-head">
+          <span class="eyebrow">The referee says</span>
+          <button class="btn ghost small" id="listen" type="button" aria-label="Listen to the referee" hidden>Listen</button>
+        </div>
         <p id="verdict-text"></p>
         <p class="hint" id="unlocated-note" hidden></p>
       </section>
@@ -460,6 +475,10 @@ const $ = (id) => document.getElementById(id);
 let code = null;
 let pollTimer = null;
 let prefilled = false;
+let verdictId = null; // id of the shortlist whose verdict is on screen
+let currentVerdict = ""; // the text Listen would read
+let speechRun = 0;
+let listening = false;
 
 // localStorage can throw (private windows, blocked storage), so wrap it.
 function remember(key, value) {
@@ -510,9 +529,76 @@ async function api(path, options) {
   return data;
 }
 
+// ---- Speech helpers (tested: test/speech.test.js runs this block on its own) ----
+
+// Keep Latin text, digits and common punctuation. Chinese characters in place
+// names, emoji and symbols are dropped, because a speech engine reads them
+// badly or skips them.
+function speechText(text) {
+  return String(text)
+    .replace(/[^\u0000-ɏ‐-‧]/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\s*\n\s*/g, " ")
+    .trim();
+}
+
+// Split into chunks of at most max characters, ending at sentence breaks where
+// possible. Some browsers cut off long utterances, so we speak in short pieces.
+// A full stop inside a number ("5.0") is not a sentence break.
+function speechChunks(text, max = 180) {
+  const sentences = (text.match(/.+?(?:[.!?]+["')\]]*(?=\s|$)|$)/gs) || [])
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const chunks = [];
+  let current = "";
+  const add = (piece) => {
+    const joined = current ? `${current} ${piece}` : piece;
+    if (joined.length <= max) {
+      current = joined;
+    } else {
+      if (current) chunks.push(current);
+      current = piece;
+    }
+  };
+  for (const sentence of sentences) {
+    if (sentence.length <= max) {
+      add(sentence);
+      continue;
+    }
+    // A very long sentence is cut at word boundaries.
+    let piece = "";
+    for (const word of sentence.split(/\s+/)) {
+      const joined = piece ? `${piece} ${word}` : word;
+      if (joined.length > max && piece) {
+        add(piece);
+        piece = word;
+      } else {
+        piece = joined;
+      }
+    }
+    if (piece) add(piece);
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+// Prefer a Singapore English voice, then British, then Australian, then any
+// English one. Returns null when the device has none, and the browser default
+// is used instead.
+function pickVoice(voices) {
+  const lang = (v) => String(v.lang || "").replace("_", "-").toLowerCase();
+  for (const prefix of ["en-sg", "en-gb", "en-au", "en"]) {
+    const found = voices.find((v) => lang(v) === prefix || lang(v).startsWith(`${prefix}-`));
+    if (found) return found;
+  }
+  return null;
+}
+// ---- End speech helpers ----
+
 // ---- Navigation -----------------------------------------------------------
 
 function showHome() {
+  stopSpeaking();
   clearInterval(pollTimer);
   code = null;
   $("room").hidden = true;
@@ -689,6 +775,12 @@ function renderResults(shortlists) {
   $("results").hidden = !latest;
   if (!latest) return;
 
+  // A new verdict replaces the old one, so stop reading the old one out.
+  if (latest.id !== verdictId) {
+    stopSpeaking();
+    verdictId = latest.id;
+  }
+  currentVerdict = latest.summary;
   $("verdict-text").textContent = latest.summary;
   const missing = latest.unlocated || [];
   $("unlocated-note").hidden = missing.length === 0;
@@ -749,6 +841,11 @@ function renderPick(pick) {
 
 // ---- Referee --------------------------------------------------------------
 
+// Remember the voice for next time. Ignore a stored value the page no longer offers.
+const savedTone = recall("dajiachi-tone");
+if ([...$("tone").options].some((o) => o.value === savedTone)) $("tone").value = savedTone;
+$("tone").addEventListener("change", () => remember("dajiachi-tone", $("tone").value));
+
 $("decide").addEventListener("click", async () => {
   $("decide-error").textContent = "";
   $("decide").disabled = true;
@@ -757,7 +854,7 @@ $("decide").addEventListener("click", async () => {
     await api(`/api/rooms/${code}/decide`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ objection: $("objection").value }),
+      body: JSON.stringify({ objection: $("objection").value, tone: $("tone").value }),
     });
     $("objection").value = "";
     await refresh();
@@ -769,6 +866,55 @@ $("decide").addEventListener("click", async () => {
     $("decide").textContent = "Make the shortlist";
   }
 });
+
+// ---- Listen ---------------------------------------------------------------
+
+// Reading aloud happens only when someone presses Listen. Nothing speaks by
+// itself, including when a new verdict arrives.
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+$("listen").hidden = !canSpeak;
+
+function setListening(on) {
+  listening = on;
+  $("listen").textContent = on ? "Stop" : "Listen";
+  $("listen").setAttribute("aria-label", on ? "Stop listening" : "Listen to the referee");
+}
+
+// Each run gets a number, so a late "ended" event from a cancelled run cannot
+// reset the button for the run that replaced it.
+function stopSpeaking() {
+  speechRun += 1;
+  if (canSpeak) speechSynthesis.cancel();
+  setListening(false);
+}
+
+function speak(text) {
+  const chunks = speechChunks(speechText(text));
+  if (chunks.length === 0) return;
+  speechSynthesis.cancel();
+  const run = ++speechRun;
+  const voice = pickVoice(speechSynthesis.getVoices());
+  const done = () => { if (run === speechRun) setListening(false); };
+  chunks.forEach((chunk, i) => {
+    const utterance = new SpeechSynthesisUtterance(chunk);
+    utterance.lang = voice ? voice.lang : "en-GB";
+    if (voice) utterance.voice = voice;
+    if (i === chunks.length - 1) {
+      utterance.onend = done;
+      utterance.onerror = done;
+    } else {
+      utterance.onerror = done; // a failure part-way ends the whole reading
+    }
+    speechSynthesis.speak(utterance);
+  });
+  setListening(true);
+}
+
+$("listen").addEventListener("click", () => {
+  if (listening) stopSpeaking();
+  else speak(currentVerdict);
+});
+window.addEventListener("pagehide", () => { if (canSpeak) speechSynthesis.cancel(); });
 
 // ---- Boot -----------------------------------------------------------------
 

@@ -37,7 +37,8 @@ const FORECAST_URL =
   "https://api-open.data.gov.sg/v2/real-time/api/two-hr-forecast";
 
 const MAX_REASON_LENGTH = 300;
-const MAX_SUMMARY_LENGTH = 700;
+// About 130 words of room, so a spoken-style summary is not cut mid-sentence.
+const MAX_SUMMARY_LENGTH = 900;
 
 // Cuisines that clash with a dietary constraint. Halal is not listed: a halal
 // member can still eat most of these at a halal-friendly place.
@@ -131,7 +132,7 @@ export const toolDefinitions = [
                 id: { type: "string", description: "A candidate id from find_candidates." },
                 reason: {
                   type: "string",
-                  description: "One or two sentences on why this place, using only facts from the tool results.",
+                  description: "One or two full sentences on why this place, using only facts from the tool results.",
                 },
               },
               required: ["id", "reason"],
@@ -140,7 +141,7 @@ export const toolDefinitions = [
           summary: {
             type: "string",
             description:
-              "The verdict everyone reads, under 80 words: why this order, what you relaxed, who lost out, and what needs confirming.",
+              "The verdict everyone reads, written as you would say it aloud to the group: three to five full sentences, about 80 to 110 words, in your voice. Cover your top pick, who lost out and why, anything you relaxed, and what needs confirming. No bullet points, lists or sentence fragments.",
           },
         },
         required: ["picks", "summary"],

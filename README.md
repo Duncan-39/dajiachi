@@ -47,6 +47,16 @@ sequenceDiagram
     Worker-->>Browser: {reply}
 ```
 
+## The referee's voice
+
+The person asking for a shortlist picks a voice from a dropdown: **Singlish referee** (the default), **Professional**, or **Grumpy uncle** (the voice from Lunch Uncle). The choice is sent with each request, remembered in that browser, and only changes the wording of the summary and reasons. The summary is stored, so everyone in the poll reads the voice of whoever asked last, and earlier shortlists keep the voice they were made in.
+
+Every voice gets the identical rules below, so a voice can never relax a dietary rule or the honesty about what Google cannot confirm. To add a voice, add an entry to `TONES` in `src/prompt.js` and an `<option>` in `src/ui.html`. A test fails if the page and the server disagree on the list.
+
+## Listen to the verdict
+
+The "The referee says" card has a **Listen** button that reads the verdict aloud using the browser's built-in speech (`speechSynthesis`). It only speaks when someone presses it, never by itself, and each person hears it on their own device. It prefers a Singapore, then British, then Australian, then any English voice the device has. Chinese characters in place names are left out of what is read, since speech engines handle them badly. Pressing the button again stops it, and it also stops when a newer verdict arrives, when you leave the poll, or when the page closes. The button is hidden in browsers with no speech support. There is no server involved, so it costs nothing, but voice quality depends on the device.
+
 ## Rules the referee follows
 
 - The six dietary options (halal, vegetarian, vegan, no beef, no shellfish, nut allergy) are hard rules. They are checkboxes, so the model cannot misread them, and it never drops one to fit a cuisine.

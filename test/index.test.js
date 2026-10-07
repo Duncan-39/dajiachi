@@ -256,3 +256,76 @@ test("decide returns 500 with a friendly message when the LLM fails", async (t) 
   assert.equal(res.status, 500);
   assert.match((await res.json()).error, /cannot think/);
 });
+
+// ---- tone -----------------------------------------------------------------
+
+import { TONES } from "../src/prompt.js";
+
+const systemPromptOf = (stub) => stub.calls[0].body.messages.find((m) => m.role === "system").content;
+
+test("decide uses the Singlish referee when no tone is given", async (t) => {
+  quietLogs(t);
+  const { env, code } = await roomWithMei();
+  const stub = stubFetch(world(() => textCompletion("ok")));
+  t.after(stub.restore);
+
+  await call(env, "POST", `/api/rooms/${code}/decide`);
+
+  assert.match(systemPromptOf(stub), /I settle this one, no more arguing/);
+});
+
+test("decide passes the chosen tone to the model", async (t) => {
+  quietLogs(t);
+  for (const [tone, marker] of [
+    ["professional", /No slang, no jokes/],
+    ["uncle", /A bit impatient/],
+    ["singlish", /I settle this one/],
+  ]) {
+    const { env, code } = await roomWithMei();
+    const stub = stubFetch(world(() => textCompletion("ok")));
+
+    const res = await call(env, "POST", `/api/rooms/${code}/decide`, { tone });
+    stub.restore();
+
+    assert.equal(res.status, 200, tone);
+    assert.match(systemPromptOf(stub), marker, tone);
+    // Whatever the tone, the dietary rules stay in the prompt.
+    assert.match(systemPromptOf(stub), /Dietary constraints are hard rules/, tone);
+  }
+});
+
+test("decide rejects a tone that does not exist, before calling the model", async (t) => {
+  quietLogs(t);
+  const { env, code } = await roomWithMei();
+  const stub = stubFetch(() => textCompletion("should not be called"));
+  t.after(stub.restore);
+
+  for (const tone of ["pirate", "", 5, null, ["uncle"], "constructor"]) {
+    const res = await call(env, "POST", `/api/rooms/${code}/decide`, { tone });
+    assert.equal(res.status, 400, `tone ${JSON.stringify(tone)}`);
+    assert.match((await res.json()).error, /tone must be one of: singlish, professional, uncle/);
+  }
+  assert.equal(stub.calls.length, 0);
+});
+
+test("a rejected tone does not use up the poll's cooldown", async (t) => {
+  quietLogs(t);
+  const { env, code } = await roomWithMei();
+  const stub = stubFetch(world(() => textCompletion("ok")));
+  t.after(stub.restore);
+
+  await call(env, "POST", `/api/rooms/${code}/decide`, { tone: "pirate" });
+  const res = await call(env, "POST", `/api/rooms/${code}/decide`, { tone: "uncle" });
+
+  assert.equal(res.status, 200);
+});
+
+test("the page offers exactly the tones the server accepts", async () => {
+  const html = await (await call(makeEnv(), "GET", "/")).text();
+  const offered = [...html.matchAll(/<option value="([^"]+)">([^<]+)<\/option>/g)];
+  const known = offered.filter(([, value]) => value in TONES);
+
+  assert.deepEqual(known.map(([, value]) => value), Object.keys(TONES));
+  assert.deepEqual(known.map(([, , label]) => label), Object.values(TONES).map((t) => t.label));
+  assert.match(html, /tone: \$\("tone"\)\.value/);
+});
