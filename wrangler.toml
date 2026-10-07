@@ -1,0 +1,20 @@
+name = "food-finder"
+main = "src/index.js"
+compatibility_date = "2025-08-01"
+
+# Serve the page from a plain HTML file, imported as a string.
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = false
+
+# Rooms, members and decisions live in D1. Create the database with
+# `wrangler d1 create food-finder`, then paste its database_id below.
+[[d1_databases]]
+binding = "DB"
+database_name = "food-finder"
+database_id = "REPLACE_WITH_DATABASE_ID"
+
+# Secrets (OPENCODE_API_KEY, GOOGLE_PLACES_API_KEY) are set with
+# `wrangler secret put` for deploys and `.dev.vars` for local development.
+# Never put them in this file.

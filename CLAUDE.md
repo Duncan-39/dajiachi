@@ -1,0 +1,12 @@
+Da Jia Chi (大家吃) is a Cloudflare Worker with a D1 database. People join a poll (the code and API call it a "room") by code, say where they are coming from, what they feel like and what they cannot eat, and an LLM referee builds a shortlist of up to three places, ranked so nobody's trip is much longer than the rest. It runs an agentic loop against an OpenAI-compatible LLM with five tools: read_votes, locate_members, find_candidates, get_rain_forecast and write_shortlist.
+
+## Conventions
+
+- Keep each tool split into a function that does IO (D1 or network) and pure functions that shape or rank the result. Test the pure part directly. Geometry, travel times and ranking live in `src/travel.js`.
+- The model never supplies coordinates or travel times. `find_candidates` computes the search point itself, and `write_shortlist` takes candidate ids plus reasons and attaches names and times from the stored candidates. Do not add tool parameters that let the model pass a place name, coordinate or time. A test enforces this.
+- Dietary rules (halal, vegetarian, vegan, no_beef, no_shellfish, nut_allergy) are hard constraints and come from checkboxes, never free text. Google Places can only report vegetarian. Everything else is flagged as `unverified_needs` on each candidate, the UI says "Confirm with the restaurant", and the prompt forbids claiming certification or allergy safety. Do not weaken any of this, and keep the UI copy honest: never write "Halal-certified" or imply every place suits everyone.
+- Travel times come from the Google Routes API transit matrix. When Routes is disabled or a pair has no route, that pair falls back to a labelled estimate (`estimated: true`, shown with a "~"). The transit path is only covered by tests against the documented response shape, so it needs a live check after any change.
+- Keep the SQL in `src/db.js` to simple, single-purpose statements. `test-support/fake-d1.mjs` matches them by pattern and throws on anything unknown, so when you add or change a query, update the fake in the same change.
+- Secrets come from `env` only, never in code, `wrangler.toml`, or committed files. `.dev.vars` is gitignored. The `database_id` in `wrangler.toml` is not a secret.
+- Build DOM in `src/ui.html` with `textContent` only. Names and notes come from other people.
+- Run `npm test` before opening a PR. Keep the project free of runtime npm dependencies and build steps.

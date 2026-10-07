@@ -1,0 +1,19 @@
+{
+  "name": "food-finder",
+  "version": "1.0.0",
+  "description": "Group Chat Referee: an LLM referee that settles where a group eats.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute food-finder --local --file=schema.sql",
+    "db:remote": "wrangler d1 execute food-finder --remote --file=schema.sql",
+    "test": "node --import ./test-support/register-html.mjs --test",
+    "test:coverage": "node --import ./test-support/register-html.mjs --test --experimental-test-coverage"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

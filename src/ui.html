@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Da Jia Chi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&text=%E5%A4%A7%E5%AE%B6%E5%90%83&display=swap">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #F4F7F4;
+    --surface: #FFFFFF;
+    --ink: #13221D;
+    --muted: #586a63;
+    --line: #d5dfda;
+    --jade: #1E6A54;
+    --jade-soft: #e1eee8;
+    --chili: #D9412A;
+    --on-accent: #FFFFFF;
+    --font-display: "Young Serif", Georgia, "Times New Roman", serif;
+    --font-han: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0E1613; --surface: #16211D; --ink: #E6EEEA; --muted: #9db0a8; --line: #2a3a34;
+      --jade: #5FBF9C; --jade-soft: #1b2f28; --chili: #FF6A50; --on-accent: #0E1613;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 1.0625rem/1.6 var(--font-body);
+    padding: env(safe-area-inset-top, 0) 20px env(safe-area-inset-bottom, 0);
+  }
+  .wrap { max-width: 1120px; margin-inline: auto; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.12; text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  .eyebrow { font: 500 0.75rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--jade); }
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+    outline: 3px solid var(--chili); outline-offset: 3px;
+  }
+  [hidden] { display: none !important; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+  .seal {
+    display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--chili); color: var(--on-accent); font: 900 1.05rem/1 var(--font-han);
+  }
+  .brand b { font: 400 1.25rem/1 var(--font-display); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 22px;
+    border: 0; border-radius: 999px; background: var(--chili); color: var(--on-accent);
+    font: 700 1rem/1.2 var(--font-body); cursor: pointer; text-decoration: none;
+    transition: transform .15s ease;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.small { padding: 10px 18px; font-size: 0.95rem; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+  .field, .area-input {
+    width: 100%; padding: 12px 14px; font: inherit; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  }
+  label.lab { display: block; font-weight: 700; margin: 18px 0 6px; }
+  .hint { color: var(--muted); font-size: 0.92rem; margin-bottom: 8px; }
+  .error { color: var(--chili); min-height: 1.5em; margin-top: 8px; }
+  .ok { color: var(--jade); min-height: 1.5em; margin-top: 8px; }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 48px; align-items: center; padding-block: 24px 64px; }
+  .hero-copy { display: grid; gap: 22px; min-width: 0; }
+  .han { font: 900 clamp(4.5rem, 11vw, 7.5rem)/0.9 var(--font-han); color: var(--chili); letter-spacing: 0.02em; }
+  .hero h1 { font-size: clamp(2.1rem, 4.4vw, 3.3rem); }
+  .hero h1 em { font-style: normal; color: var(--jade); }
+  .lede { color: var(--muted); max-width: 34rem; font-size: 1.15rem; }
+  .cta { display: grid; gap: 14px; max-width: 26rem; }
+  .join-row { display: flex; gap: 8px; }
+  .join-row input { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: 0.15em; }
+
+  /* The round table */
+  .table {
+    display: grid; gap: 14px; align-items: center; justify-items: center;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas: ". a ." "d t b" ". c .";
+  }
+  .seat {
+    width: 100%; max-width: 200px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px 14px; display: grid; gap: 6px; font-size: 0.85rem; min-width: 0;
+  }
+  .seat:nth-of-type(1) { grid-area: a; }
+  .seat:nth-of-type(2) { grid-area: b; }
+  .seat:nth-of-type(3) { grid-area: c; }
+  .seat:nth-of-type(4) { grid-area: d; }
+  .who { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem; min-width: 0; }
+  .who span { overflow-wrap: anywhere; }
+  .who i {
+    flex: none; font-style: normal; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--jade-soft); color: var(--jade); font-size: 0.75rem; font-weight: 700;
+  }
+  .from { color: var(--muted); overflow-wrap: anywhere; }
+  .seat .note-text { color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip {
+    font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--ink); white-space: nowrap;
+  }
+  .chip.need { background: var(--jade); border-color: var(--jade); color: var(--on-accent); }
+
+  .disc {
+    grid-area: t; position: relative; width: 100%; max-width: 230px; aspect-ratio: 1;
+    border-radius: 50%; background: var(--jade); color: var(--on-accent);
+    display: grid; place-items: center; text-align: center;
+  }
+  .disc::before {
+    content: ""; position: absolute; inset: 12px; border-radius: 50%;
+    border: 2px dashed color-mix(in srgb, var(--on-accent) 45%, transparent);
+    animation: turn 40s linear infinite;
+  }
+  .disc-in { display: grid; gap: 4px; padding: 30px; }
+  .disc-in .big { font: 400 2.6rem/1 var(--font-display); }
+  .disc-in span { font-size: 0.85rem; line-height: 1.35; }
+  .disc-in .eyebrow { color: inherit; opacity: .8; font-size: 0.65rem; }
+  @keyframes turn { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .disc::before { animation: none; } .btn { transition: none; } }
+
+  /* More than four people: the disc sits on top and the seats wrap below it. */
+  .table.wrap { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); grid-template-areas: none; justify-items: stretch; }
+  .table.wrap .seat { grid-area: auto; max-width: none; }
+  .table.wrap .disc { grid-area: auto; grid-column: 1 / -1; order: -1; justify-self: center; max-width: 200px; }
+
+  /* Sections */
+  section.block { padding-block: 56px; border-top: 1px solid var(--line); }
+  .head { display: grid; gap: 12px; margin-bottom: 32px; max-width: 40rem; }
+  .head h2 { font-size: clamp(1.8rem, 3.4vw, 2.5rem); }
+  .head p { color: var(--muted); }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+  .steps li { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .steps .n {
+    font: 400 1.1rem/1 var(--font-display); width: 40px; height: 40px; border-radius: 50%;
+    display: grid; place-items: center; border: 1.5px solid var(--chili); color: var(--chili);
+  }
+  .steps h3 { font-size: 1.35rem; }
+  .steps p { color: var(--muted); }
+  .qs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .q { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+  .q h3 { font-size: 1.25rem; }
+  .q p { color: var(--muted); font-size: 0.98rem; }
+  .q .chips { gap: 6px; }
+  .q .chip { font-size: 0.8rem; padding: 4px 10px; }
+
+  /* Poll panels */
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+  .panel h2 { font-size: 1.5rem; margin-bottom: 4px; }
+  .poll-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 20px; }
+  .code { font: 500 1.4rem/1 var(--font-mono); letter-spacing: 0.18em; color: var(--jade); }
+  .poll-head .spacer { flex: 1; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opt {
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.92rem; font-weight: 500;
+  }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt:has(input:checked) { background: var(--jade-soft); border-color: var(--jade); color: var(--jade); font-weight: 700; }
+  .opt.need:has(input:checked) { background: var(--jade); color: var(--on-accent); }
+  .opt:has(input:focus-visible) { outline: 3px solid var(--chili); outline-offset: 2px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; align-items: center; }
+  .referee-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .referee-row .field { flex: 1; min-width: 200px; }
+
+  /* Shortlist */
+  .verdict { border-color: var(--jade); box-shadow: 0 0 0 1px var(--jade); }
+  .verdict p { white-space: pre-wrap; margin-top: 8px; }
+  .list { display: grid; gap: 14px; margin-bottom: 20px; }
+  .pick {
+    display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr); gap: 16px 32px; align-items: start;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 24px;
+  }
+  .pick.first { border-color: var(--jade); box-shadow: 0 0 0 1px var(--jade); }
+  .pick-name { display: grid; gap: 6px; min-width: 0; }
+  .pick-name h3 { font-size: 1.3rem; overflow-wrap: anywhere; }
+  .pick-name p { color: var(--muted); font-size: 0.92rem; }
+  .pick .reason { grid-column: 1 / -1; font-size: 0.98rem; }
+  .confirm { grid-column: 1 / -1; font-size: 0.88rem; color: var(--muted); }
+  .confirm b { color: var(--ink); }
+  .times { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; font-variant-numeric: tabular-nums; }
+  .t { display: grid; gap: 2px; text-align: center; padding: 8px 4px; border-radius: 10px; background: var(--jade-soft); min-width: 0; }
+  .t small { font-size: 0.72rem; color: var(--muted); overflow-wrap: anywhere; }
+  .t b { font-size: 1.05rem; }
+  .t.max { background: transparent; border: 1px solid var(--line); }
+  .t.max b { color: var(--chili); }
+  .legend { font: 500 0.75rem/1.5 var(--font-mono); color: var(--muted); margin-bottom: 20px; }
+  details.history { margin-top: 8px; }
+  details.history summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
+  .old { padding: 10px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.92rem; }
+  .old b { color: var(--ink); }
+
+  footer { padding-block: 28px 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 32px; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .steps, .qs { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .pick { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    body { padding-inline: 16px; }
+    .table { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "t t" "a b" "d c"; }
+    .seat { max-width: none; align-self: stretch; }
+    .table.wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#" id="brand" aria-label="Da Jia Chi home"><span class="seal" aria-hidden="true">吃</span><b>Da Jia Chi</b></a>
+  </header>
+
+  <!-- ============ Home ============ -->
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="han" lang="zh-Hans" aria-hidden="true">大家吃</div>
+        <p class="eyebrow">Da jia chi · “everybody eat”</p>
+        <h1>Pick a place where <em>everyone</em> can eat.</h1>
+        <p class="lede">Send one poll to the group. Each person adds what they can’t eat, where they’re coming from and what they feel like. Da Jia Chi suggests places near a fair meeting point, ranked so nobody’s trip is much longer than the rest, and flags anything it can’t confirm.</p>
+        <div class="cta">
+          <button class="btn" id="create" type="button">Start a poll</button>
+          <div class="join-row">
+            <input class="field" id="join-code" type="text" maxlength="5" placeholder="Have a code?" aria-label="Poll code" autocapitalize="characters" autocomplete="off">
+            <button class="btn ghost" id="join" type="button">Join</button>
+          </div>
+          <p class="error" id="home-error" role="alert"></p>
+        </div>
+      </div>
+
+      <div class="table" aria-label="Example: four friends answer the poll and get a shortlist">
+        <div class="seat">
+          <div class="who"><i>AR</i><span>Aisha</span></div>
+          <div class="from">From Bedok</div>
+          <div class="chips"><span class="chip need">Halal</span><span class="chip">malay</span><span class="chip">indian</span></div>
+        </div>
+        <div class="seat">
+          <div class="who"><i>WJ</i><span>Wei Jie</span></div>
+          <div class="from">From Jurong East</div>
+          <div class="chips"><span class="chip">thai</span><span class="chip">zi char</span></div>
+        </div>
+        <div class="seat">
+          <div class="who"><i>PS</i><span>Priya</span></div>
+          <div class="from">From Bishan</div>
+          <div class="chips"><span class="chip need">Vegetarian</span><span class="chip">indian</span></div>
+        </div>
+        <div class="seat">
+          <div class="who"><i>MT</i><span>Marcus</span></div>
+          <div class="from">From Tanjong Pagar</div>
+          <div class="chips"><span class="chip need">No shellfish</span><span class="chip">indian</span></div>
+        </div>
+        <div class="disc">
+          <div class="disc-in">
+            <span class="eyebrow">Shortlist</span>
+            <span class="big">3</span>
+            <span>places to try<br>for all 4 of you</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="head">
+        <p class="eyebrow">How it works</p>
+        <h2>From group chat to table in three steps</h2>
+      </div>
+      <ol class="steps">
+        <li><span class="n">1</span><h3>Start a poll</h3><p>Start a poll and share the code or link with your group.</p></li>
+        <li><span class="n">2</span><h3>Everyone answers</h3><p>Each person answers three quick questions on their own phone. Nobody has to speak up in the chat about what they can’t eat.</p></li>
+        <li><span class="n">3</span><h3>Get your shortlist</h3><p>Da Jia Chi searches near a fair meeting point, ranks places by who has to travel furthest, and tells you what you still need to confirm with the restaurant.</p></li>
+      </ol>
+    </section>
+
+    <section class="block">
+      <div class="head">
+        <p class="eyebrow">The poll</p>
+        <h2>Three questions for each person</h2>
+        <p>That’s all Da Jia Chi needs to know about each person.</p>
+      </div>
+      <div class="qs">
+        <article class="q">
+          <h3>Anything you can’t eat?</h3>
+          <p>Dietary needs are strict: the referee never drops one. Google can’t confirm halal, vegan or allergy-safe kitchens, so those are flagged for you to check with the restaurant.</p>
+          <div class="chips"><span class="chip need">Halal</span><span class="chip need">Vegetarian</span><span class="chip need">Vegan</span><span class="chip need">No beef</span><span class="chip need">No shellfish</span><span class="chip need">Nut allergy</span></div>
+        </article>
+        <article class="q">
+          <h3>Where are you coming from?</h3>
+          <p>Your office, home or nearest MRT. Suggestions are ranked so that nobody faces a much longer trip than the others.</p>
+          <div class="chips"><span class="chip">Raffles Place</span><span class="chip">Bishan</span><span class="chip">Jurong East</span><span class="chip">Tampines</span></div>
+        </article>
+        <article class="q">
+          <h3>What do you feel like?</h3>
+          <p>Choose the cuisines you’d like. They’re a preference, so the referee can bend them if nothing else works, and will tell you when it does.</p>
+          <div class="chips"><span class="chip">thai</span><span class="chip">zi char</span><span class="chip">indian</span><span class="chip">hawker</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="head">
+        <p class="eyebrow">What you get back</p>
+        <h2>A shortlist with everyone’s travel time</h2>
+        <p>For each place you see how long every person takes to get there, so the group can see the choice is fair.</p>
+      </div>
+      <div class="list">
+        <article class="pick first">
+          <div class="pick-name">
+            <span class="eyebrow">Top pick</span>
+            <h3>Saffron Lane</h3>
+            <p>North Indian · Little India</p>
+          </div>
+          <div class="times">
+            <div class="t"><small>Aisha</small><b>24</b></div>
+            <div class="t"><small>Wei Jie</small><b>29</b></div>
+            <div class="t"><small>Priya</small><b>19</b></div>
+            <div class="t"><small>Marcus</small><b>15</b></div>
+            <div class="t max"><small>Longest</small><b>29 min</b></div>
+          </div>
+          <p class="confirm"><b>Confirm with the restaurant:</b> Halal (ask for the MUIS certificate), No shellfish (tell the staff)</p>
+        </article>
+        <article class="pick">
+          <div class="pick-name">
+            <h3>Rasa Kampung</h3>
+            <p>Malay · Kampong Glam</p>
+          </div>
+          <div class="times">
+            <div class="t"><small>Aisha</small><b>22</b></div>
+            <div class="t"><small>Wei Jie</small><b>33</b></div>
+            <div class="t"><small>Priya</small><b>21</b></div>
+            <div class="t"><small>Marcus</small><b>14</b></div>
+            <div class="t max"><small>Longest</small><b>33 min</b></div>
+          </div>
+        </article>
+      </div>
+      <p class="legend">Example shortlist. The places and travel times are made up for illustration.</p>
+    </section>
+  </main>
+
+  <!-- ============ Poll ============ -->
+  <main id="room" hidden>
+    <div class="poll-head">
+      <span class="eyebrow">Poll</span>
+      <span class="code" id="room-code"></span>
+      <button class="btn ghost small" id="copy-link" type="button">Copy link</button>
+      <span class="spacer"></span>
+      <button class="btn ghost small" id="leave" type="button">Leave</button>
+    </div>
+
+    <section class="panel">
+      <h2>Your answers</h2>
+      <p class="hint">Pick what applies, then save. Everyone in the poll can see your name, area, diet and cuisines.</p>
+      <form id="member-form">
+        <label class="lab" for="name">Your name</label>
+        <input class="field" id="name" type="text" maxlength="30" required autocomplete="off">
+
+        <label class="lab" for="area">Where are you coming from?</label>
+        <input class="field" id="area" type="text" maxlength="60" list="mrt" placeholder="Your nearest MRT, office or home" required autocomplete="off">
+        <datalist id="mrt"></datalist>
+
+        <label class="lab" id="cuisine-label">What do you feel like? <span class="hint">Pick up to 6</span></label>
+        <div class="opts" id="cuisines" role="group" aria-labelledby="cuisine-label"></div>
+
+        <label class="lab" id="dietary-label">Anything you can’t eat? <span class="hint">The referee never breaks these</span></label>
+        <div class="opts" id="dietary" role="group" aria-labelledby="dietary-label"></div>
+
+        <label class="lab" for="notes">Anything else?</label>
+        <textarea class="field" id="notes" rows="2" maxlength="200" placeholder="e.g. not too spicy, want air-con"></textarea>
+
+        <div class="actions">
+          <button class="btn" type="submit" id="save">Save my answers</button>
+        </div>
+        <p class="error" id="form-error" role="alert"></p>
+        <p class="ok" id="form-status" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Round the table (<span id="member-count">0</span>)</h2>
+      <p class="hint">Updates by itself as people answer.</p>
+      <div class="table" id="table"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Ask the referee</h2>
+      <p class="hint">Not happy with the last shortlist? Say why and ask again.</p>
+      <div class="referee-row">
+        <input class="field" id="objection" type="text" maxlength="300" placeholder="e.g. Ah Beng objects, nothing Western please" aria-label="Objection (optional)" autocomplete="off">
+        <button class="btn" id="decide" type="button">Make the shortlist</button>
+      </div>
+      <p class="error" id="decide-error" role="alert"></p>
+    </section>
+
+    <div id="results" hidden>
+      <section class="panel verdict" id="verdict">
+        <span class="eyebrow">The referee says</span>
+        <p id="verdict-text"></p>
+        <p class="hint" id="unlocated-note" hidden></p>
+      </section>
+      <div class="list" id="picks"></div>
+      <p class="legend" id="legend" hidden>Times are minutes by public transport from each person’s starting point. A “~” marks an estimate.</p>
+      <details class="history" id="history" hidden>
+        <summary>Earlier shortlists</summary>
+        <div id="history-list"></div>
+      </details>
+    </div>
+  </main>
+
+  <footer>
+    <span>Da Jia Chi · 大家吃</span>
+    <span>Everybody eat.</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+const CUISINES = ["chinese", "japanese", "korean", "western", "indian", "malay", "thai",
+  "vietnamese", "zi char", "hawker", "steakhouse", "seafood", "bbq"];
+const DIETARY = [["halal", "Halal"], ["vegetarian", "Vegetarian"], ["vegan", "Vegan"],
+  ["no_beef", "No beef"], ["no_shellfish", "No shellfish"], ["nut_allergy", "Nut allergy"]];
+const DIETARY_LABEL = Object.fromEntries(DIETARY);
+// What the group still has to confirm with the restaurant, per need.
+const CONFIRM_LABEL = {
+  halal: "Halal (ask for the MUIS certificate)",
+  vegetarian: "Vegetarian options",
+  vegan: "Vegan options",
+  no_beef: "No beef",
+  no_shellfish: "No shellfish (tell the staff)",
+  nut_allergy: "Nut allergy (tell the staff)",
+};
+const PRICE = { PRICE_LEVEL_INEXPENSIVE: "$", PRICE_LEVEL_MODERATE: "$$",
+  PRICE_LEVEL_EXPENSIVE: "$$$", PRICE_LEVEL_VERY_EXPENSIVE: "$$$$" };
+const MRT = ["Admiralty", "Aljunied", "Bayfront", "Bedok", "Bishan", "Boon Lay", "Botanic Gardens",
+  "Bugis", "Buona Vista", "Changi Airport", "Chinatown", "City Hall", "Clarke Quay", "Clementi",
+  "Dhoby Ghaut", "Farrer Road", "HarbourFront", "Hougang", "Jurong East", "Kallang", "Khatib",
+  "Kovan", "Lavender", "Little India", "MacPherson", "Marina Bay", "Marina South Pier", "Novena",
+  "one-north", "Orchard", "Outram Park", "Paya Lebar", "Pasir Ris", "Potong Pasir", "Punggol",
+  "Queenstown", "Raffles Place", "Redhill", "Sengkang", "Serangoon", "Simei", "Somerset",
+  "Stevens", "Tampines", "Tanah Merah", "Tanjong Pagar", "Tiong Bahru", "Toa Payoh", "Woodlands",
+  "Yew Tee", "Yishun"];
+const MAX_CUISINES = 6;
+const RING_SEATS = 4;
+const POLL_MS = 3000;
+
+const $ = (id) => document.getElementById(id);
+let code = null;
+let pollTimer = null;
+let prefilled = false;
+
+// localStorage can throw (private windows, blocked storage), so wrap it.
+function remember(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* ignore */ }
+}
+function recall(key) {
+  try { return localStorage.getItem(key) || ""; } catch { return ""; }
+}
+
+// Build DOM with textContent only, so other people's names and notes can
+// never inject markup.
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function buildOptions(container, items, name, extraClass) {
+  for (const [value, label] of items) {
+    const wrap = el("label", `opt ${extraClass}`.trim());
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.name = name;
+    box.value = value;
+    wrap.append(box, el("span", "", label));
+    container.append(wrap);
+  }
+}
+
+buildOptions($("cuisines"), CUISINES.map((c) => [c, c[0].toUpperCase() + c.slice(1)]), "cuisine", "");
+buildOptions($("dietary"), DIETARY, "dietary", "need");
+for (const station of MRT) {
+  const option = document.createElement("option");
+  option.value = `${station} MRT`;
+  $("mrt").append(option);
+}
+
+function checked(name) {
+  return [...document.querySelectorAll(`input[name=${name}]:checked`)].map((b) => b.value);
+}
+
+async function api(path, options) {
+  const res = await fetch(path, options);
+  let data = {};
+  try { data = await res.json(); } catch { /* non-JSON error body */ }
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+
+// ---- Navigation -----------------------------------------------------------
+
+function showHome() {
+  clearInterval(pollTimer);
+  code = null;
+  $("room").hidden = true;
+  $("home").hidden = false;
+}
+
+async function enterRoom(newCode) {
+  const upper = newCode.trim().toUpperCase();
+  try {
+    await api(`/api/rooms/${encodeURIComponent(upper)}`);
+  } catch (err) {
+    $("home-error").textContent = err.message;
+    history.replaceState(null, "", location.pathname);
+    return showHome();
+  }
+  code = upper;
+  prefilled = false;
+  history.replaceState(null, "", `#${code}`);
+  $("home-error").textContent = "";
+  $("home").hidden = true;
+  $("room").hidden = false;
+  $("room-code").textContent = code;
+  $("name").value = recall("dajiachi-name");
+  window.scrollTo(0, 0);
+  await refresh();
+  clearInterval(pollTimer);
+  pollTimer = setInterval(() => { if (!document.hidden) refresh(); }, POLL_MS);
+}
+
+$("create").addEventListener("click", async () => {
+  $("create").disabled = true;
+  try {
+    const { code: created } = await api("/api/rooms", { method: "POST" });
+    await enterRoom(created);
+  } catch (err) {
+    $("home-error").textContent = err.message;
+  } finally {
+    $("create").disabled = false;
+  }
+});
+
+$("join").addEventListener("click", () => enterRoom($("join-code").value));
+$("join-code").addEventListener("keydown", (e) => { if (e.key === "Enter") enterRoom($("join-code").value); });
+$("leave").addEventListener("click", () => {
+  history.replaceState(null, "", location.pathname);
+  showHome();
+});
+$("brand").addEventListener("click", (e) => {
+  e.preventDefault();
+  history.replaceState(null, "", location.pathname);
+  showHome();
+});
+$("copy-link").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(location.href); $("copy-link").textContent = "Copied"; }
+  catch { $("copy-link").textContent = "Copy failed"; }
+  setTimeout(() => { $("copy-link").textContent = "Copy link"; }, 1500);
+});
+
+// ---- Member form ----------------------------------------------------------
+
+// Limit cuisine picks to the cap without blocking unchecking.
+$("cuisines").addEventListener("change", (e) => {
+  if (checked("cuisine").length > MAX_CUISINES) {
+    e.target.checked = false;
+    $("form-error").textContent = `Pick at most ${MAX_CUISINES} cuisines.`;
+  } else {
+    $("form-error").textContent = "";
+  }
+});
+
+$("member-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("form-error").textContent = "";
+  $("form-status").textContent = "";
+  $("save").disabled = true;
+  const name = $("name").value.trim();
+  try {
+    await api(`/api/rooms/${code}/members`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name,
+        area: $("area").value,
+        cuisines: checked("cuisine"),
+        dietary: checked("dietary"),
+        notes: $("notes").value,
+      }),
+    });
+    remember("dajiachi-name", name);
+    prefilled = true;
+    $("form-status").textContent = "Saved.";
+    await refresh();
+  } catch (err) {
+    $("form-error").textContent = err.message;
+  } finally {
+    $("save").disabled = false;
+  }
+});
+
+// Fill the form from the server once, when the person is already in the poll.
+function prefill(members) {
+  if (prefilled) return;
+  const me = members.find((m) => m.name.toLowerCase() === $("name").value.trim().toLowerCase());
+  if (!me) return;
+  prefilled = true;
+  $("name").value = me.name;
+  $("area").value = me.area;
+  $("notes").value = me.notes;
+  for (const box of document.querySelectorAll("input[name=cuisine]")) box.checked = me.cuisines.includes(box.value);
+  for (const box of document.querySelectorAll("input[name=dietary]")) box.checked = me.dietary.includes(box.value);
+}
+
+// ---- Live state -----------------------------------------------------------
+
+async function refresh() {
+  if (!code) return;
+  let state;
+  try {
+    state = await api(`/api/rooms/${code}`);
+  } catch (err) {
+    if (err.message === "Room not found") {
+      $("home-error").textContent = "That poll has expired.";
+      history.replaceState(null, "", location.pathname);
+      showHome();
+    }
+    return; // Transient errors: keep the last view and try again next tick.
+  }
+  prefill(state.members);
+  renderTable(state.members, state.shortlists[0]);
+  renderResults(state.shortlists);
+}
+
+function initials(name) {
+  const parts = name.trim().split(/\s+/);
+  return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
+}
+
+function renderTable(members, latest) {
+  $("member-count").textContent = members.length;
+  const table = $("table");
+  table.replaceChildren();
+  table.classList.toggle("wrap", members.length > RING_SEATS);
+
+  for (const m of members) {
+    const seat = el("div", "seat");
+    const who = el("div", "who");
+    who.append(el("i", "", initials(m.name)), el("span", "", m.name));
+    seat.append(who, el("div", "from", `From ${m.area}`));
+    const chips = el("div", "chips");
+    for (const rule of m.dietary) chips.append(el("span", "chip need", DIETARY_LABEL[rule] || rule));
+    for (const cuisine of m.cuisines) chips.append(el("span", "chip", cuisine));
+    seat.append(chips);
+    if (m.notes) seat.append(el("div", "note-text", m.notes));
+    table.append(seat);
+  }
+
+  const disc = el("div", "disc");
+  const inner = el("div", "disc-in");
+  inner.append(el("span", "eyebrow", "Shortlist"));
+  if (latest && latest.picks.length > 0) {
+    inner.append(el("span", "big", String(latest.picks.length)),
+      el("span", "", `place${latest.picks.length === 1 ? "" : "s"} to try`));
+  } else if (members.length === 0) {
+    inner.append(el("span", "big", "·"), el("span", "", "Waiting for the first answer"));
+  } else {
+    inner.append(el("span", "big", String(members.length)), el("span", "", `answer${members.length === 1 ? "" : "s"} in`));
+  }
+  disc.append(inner);
+  table.append(disc);
+}
+
+function renderResults(shortlists) {
+  const [latest, ...older] = shortlists;
+  $("results").hidden = !latest;
+  if (!latest) return;
+
+  $("verdict-text").textContent = latest.summary;
+  const missing = latest.unlocated || [];
+  $("unlocated-note").hidden = missing.length === 0;
+  $("unlocated-note").textContent = missing.length
+    ? `Couldn't find the area for ${missing.join(", ")}, so their trip isn't counted.` : "";
+
+  const picks = $("picks");
+  picks.replaceChildren();
+  for (const pick of latest.picks) picks.append(renderPick(pick));
+  $("legend").hidden = latest.picks.length === 0;
+
+  $("history").hidden = older.length === 0;
+  const list = $("history-list");
+  list.replaceChildren();
+  for (const s of older) {
+    const row = el("div", "old");
+    const names = s.picks.map((p) => p.name).join(", ");
+    row.append(el("b", "", names || "No shortlist"), el("div", "", s.summary));
+    list.append(row);
+  }
+}
+
+function renderPick(pick) {
+  const card = el("article", pick.rank === 1 ? "pick first" : "pick");
+
+  const name = el("div", "pick-name");
+  name.append(el("span", "eyebrow", pick.rank === 1 ? "Top pick" : `Pick ${pick.rank}`), el("h3", "", pick.name));
+  const bits = [];
+  if (pick.address) bits.push(pick.address);
+  if (pick.rating) bits.push(`${pick.rating} ★`);
+  if (PRICE[pick.price_level]) bits.push(PRICE[pick.price_level]);
+  if (bits.length) name.append(el("p", "", bits.join(" · ")));
+  card.append(name);
+
+  const times = el("div", "times");
+  for (const t of pick.times) {
+    const cell = el("div", "t");
+    cell.append(el("small", "", t.name), el("b", "", `${t.estimated ? "~" : ""}${t.minutes}`));
+    if (t.estimated) cell.title = "Estimated: no transit route was available";
+    times.append(cell);
+  }
+  const max = el("div", "t max");
+  max.append(el("small", "", pick.long_trip ? "Longest · long trip" : "Longest"),
+    el("b", "", `${pick.longest.minutes} min`));
+  times.append(max);
+  card.append(times);
+
+  card.append(el("p", "reason", pick.reason));
+
+  if (pick.unverified_needs.length > 0) {
+    const confirm = el("p", "confirm");
+    confirm.append(el("b", "", "Confirm with the restaurant: "),
+      document.createTextNode(pick.unverified_needs.map((n) => CONFIRM_LABEL[n] || n).join(", ")));
+    card.append(confirm);
+  }
+  return card;
+}
+
+// ---- Referee --------------------------------------------------------------
+
+$("decide").addEventListener("click", async () => {
+  $("decide-error").textContent = "";
+  $("decide").disabled = true;
+  $("decide").textContent = "Referee is thinking...";
+  try {
+    await api(`/api/rooms/${code}/decide`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ objection: $("objection").value }),
+    });
+    $("objection").value = "";
+    await refresh();
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    $("decide-error").textContent = err.message;
+  } finally {
+    $("decide").disabled = false;
+    $("decide").textContent = "Make the shortlist";
+  }
+});
+
+// ---- Boot -----------------------------------------------------------------
+
+if (location.hash.length > 1) enterRoom(location.hash.slice(1));
+</script>
+</body>
+</html>
