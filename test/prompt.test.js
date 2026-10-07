@@ -24,6 +24,14 @@ test("the prompt tells the model to flag estimates, long trips and unlocated mem
   assert.match(prompt, /unlocated/);
 });
 
+test("the prompt says notes it cannot check must be named, not pretended", () => {
+  const prompt = buildSystemPrompt();
+  assert.match(prompt, /air-con/);
+  assert.match(prompt, /delivery/);
+  assert.match(prompt, /say which notes you could not act on/);
+  assert.match(prompt, /two notes clash/);
+});
+
 test("the prompt names the tools in the order to use them", () => {
   const prompt = buildSystemPrompt();
   const order = ["read_votes", "find_candidates", "write_shortlist"].map((name) =>

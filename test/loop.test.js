@@ -201,6 +201,28 @@ test("find_candidates asks Routes for transit and never sends coordinates the mo
   assert.notEqual(search.body.locationBias.circle.center.latitude, 9);
 });
 
+test("find_candidates sends the model only what it needs to choose", async (t) => {
+  quietLogs(t);
+  const { env, room } = await setup();
+  const stub = stubFetch(world(script([["find_candidates", { query: "indian" }]])));
+  t.after(stub.restore);
+
+  await runLoop("Go", env, room);
+
+  const [first] = toolResult(stub, 1).candidates;
+  assert.deepEqual(Object.keys(first).sort(), [
+    "id",
+    "long_trip",
+    "longest",
+    "name",
+    "rating",
+    "serves_vegetarian_food",
+    "times",
+    "total_min",
+    "unverified_needs",
+  ]);
+});
+
 test("find_candidates flags what Google cannot confirm and hides coordinates", async (t) => {
   quietLogs(t);
   const { env, room } = await setup();

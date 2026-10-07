@@ -5,9 +5,10 @@ import { toolDefinitions, executeTool, createToolState } from "./tools.js";
 const LLM_BASE_URL = "https://opencode.ai/inference/openai/v1";
 const LLM_MODEL = "glm-5.3";
 
-// Per model call. Later rounds carry every member plus tool results, so they
-// are slower than lunch-uncle's, which used 20 seconds.
-const LLM_TIMEOUT_MS = 60_000;
+// Per model call. The call that chooses the shortlist reads every search
+// result and has been seen taking close to a minute, and lunch-uncle's 20
+// seconds is far too short for it.
+const LLM_TIMEOUT_MS = 120_000;
 const MAX_ROUNDS = 8;
 
 const GAVE_UP_REPLY = "Referee tried too many times already. Try again in a bit.";

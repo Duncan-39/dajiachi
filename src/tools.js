@@ -532,14 +532,14 @@ export function unverifiedNeeds(holders, place) {
   return needs.sort();
 }
 
+// What the model sees. Address, price and opening status are left out: the
+// model does not need them to choose, they cost tokens, and the stored
+// shortlist takes them from the candidate anyway.
 function toModelCandidate(c) {
   return {
     id: c.id,
     name: c.name,
-    address: c.address,
     rating: c.rating,
-    price_level: c.price_level,
-    open_now: c.open_now,
     serves_vegetarian_food: c.serves_vegetarian_food,
     times: c.times,
     longest: c.longest,
